@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/travis-hodges/decision-ledger/blob/main/schema/decision.schema.json",
+  "title": "Decision Ledger decision",
+  "description": "Version 0.1. Drafts may contain empty values; readiness checks determine whether evaluation and sign-off can proceed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "kind",
+    "question",
+    "owner",
+    "phase",
+    "dueDate",
+    "objective",
+    "budgetCeiling",
+    "maxLeadDays",
+    "criteria",
+    "options",
+    "evidence",
+    "market",
+    "contacts",
+    "assumptions",
+    "risks",
+    "biasChecks",
+    "runs",
+    "analyses",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "kind": { "enum": ["Trade study", "Decision program"] },
+    "question": { "type": "string" },
+    "owner": { "type": "string" },
+    "phase": { "type": "string" },
+    "dueDate": { "type": "string" },
+    "objective": { "type": "string" },
+    "budgetCeiling": { "type": "number", "minimum": 0 },
+    "maxLeadDays": { "type": "number", "minimum": 0 },
+    "criteria": { "type": "array", "items": { "$ref": "#/$defs/criterion" } },
+    "options": { "type": "array", "items": { "$ref": "#/$defs/option" } },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } },
+    "market": { "type": "array", "items": { "$ref": "#/$defs/market" } },
+    "contacts": { "type": "array", "items": { "$ref": "#/$defs/contact" } },
+    "assumptions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/assumption" }
+    },
+    "risks": { "type": "array", "items": { "$ref": "#/$defs/risk" } },
+    "biasChecks": { "type": "array", "items": { "$ref": "#/$defs/biasCheck" } },
+    "runs": { "type": "array", "items": { "$ref": "#/$defs/run" } },
+    "analyses": { "type": "array", "items": { "$ref": "#/$defs/analysis" } },
+    "updatedAt": { "type": "string" }
+  },
+  "$defs": {
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "weight", "unit"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "weight": { "type": "number", "minimum": 0, "maximum": 100 },
+        "unit": { "type": "string" }
+      }
+    },
+    "option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "description",
+        "scores",
+        "unitPrice",
+        "leadDays",
+        "evidenceIds"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "scores": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "unitPrice": { "type": "number", "minimum": 0 },
+        "leadDays": { "type": "number", "minimum": 0 },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "source",
+        "url",
+        "date",
+        "type",
+        "verified",
+        "notes"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "source": { "type": "string" },
+        "url": { "type": "string" },
+        "date": { "type": "string" },
+        "type": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    },
+    "market": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "vendor",
+        "vehicle",
+        "year",
+        "unitPrice",
+        "quantity",
+        "source",
+        "url",
+        "verified"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "vendor": { "type": "string" },
+        "vehicle": { "type": "string" },
+        "year": { "type": "number" },
+        "unitPrice": { "type": "number", "minimum": 0 },
+        "quantity": { "type": "number", "minimum": 0 },
+        "source": { "type": "string" },
+        "url": { "type": "string" },
+        "verified": { "type": "boolean" }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "role",
+        "name",
+        "organization",
+        "source",
+        "url",
+        "status",
+        "notes"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "type": "string" },
+        "name": { "type": "string" },
+        "organization": { "type": "string" },
+        "source": { "type": "string" },
+        "url": { "type": "string" },
+        "status": { "enum": ["Unverified", "Verified", "Review needed"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "confidence", "owner"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "confidence": { "enum": ["Low", "Medium", "High"] },
+        "owner": { "type": "string" }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "severity", "mitigation"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "severity": { "enum": ["Low", "Medium", "High"] },
+        "mitigation": { "type": "string" }
+      }
+    },
+    "biasCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "status", "note"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "status": { "enum": ["Open", "Reviewed"] },
+        "note": { "type": "string" }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "at",
+        "winner",
+        "scores",
+        "note",
+        "fingerprint",
+        "snapshot"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "at": { "type": "string" },
+        "winner": { "type": ["string", "null"] },
+        "scores": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        },
+        "note": { "type": "string" },
+        "fingerprint": { "type": "string" },
+        "snapshot": { "type": "string" }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "at",
+        "prompt",
+        "output",
+        "model",
+        "inputFingerprint",
+        "publicWeb",
+        "tools"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "at": { "type": "string" },
+        "prompt": { "type": "string" },
+        "output": { "type": "string" },
+        "model": { "type": "string" },
+        "inputFingerprint": { "type": "string" },
+        "publicWeb": { "type": "boolean" },
+        "tools": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
