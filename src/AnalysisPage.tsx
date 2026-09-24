@@ -8,7 +8,6 @@ import {
   Globe2,
   ListChecks,
   Radio,
-  ShieldCheck,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { Decision, FrameDraft } from "./model";
@@ -352,24 +351,6 @@ export default function AnalysisPage({
           <button className="outline-button full" onClick={openEvidence}>
             Manage evidence <ArrowRight size={14} />
           </button>
-        </section>
-        <section className="panel">
-          <div className="eyebrow">CONTROL</div>
-          <h2>Operator review</h2>
-          <div className="control-list">
-            <div>
-              <ShieldCheck size={17} />
-              <span>Draft changes require your review.</span>
-            </div>
-            <div>
-              <ShieldCheck size={17} />
-              <span>Source citations stay visible.</span>
-            </div>
-            <div>
-              <ShieldCheck size={17} />
-              <span>Only a person releases the package.</span>
-            </div>
-          </div>
         </section>
         {decision.analyses?.length > 0 && (
           <section className="panel">

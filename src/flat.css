@@ -99,6 +99,23 @@ body,
   background: #0e1519 !important;
   border-bottom: 1px solid #2a393e;
   padding: 0 30px;
+  justify-content: flex-end;
+}
+.mobile-menu {
+  margin-right: auto;
+}
+.brand {
+  height: 72px;
+  padding: 18px 20px;
+}
+.sidebar nav {
+  margin-top: 25px;
+}
+.sidebar-bottom {
+  padding: 14px 18px 18px;
+}
+.reset-link {
+  margin: 0 auto;
 }
 .search {
   background: #141f23 !important;
@@ -141,6 +158,32 @@ body,
 }
 .content {
   padding: 31px 30px 65px;
+}
+.overview-head {
+  margin: 0 0 16px;
+  align-items: baseline;
+}
+.overview-head h1 {
+  color: #e8f0ee;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.frame-layout,
+.evidence-only,
+.people-layout {
+  max-width: 900px;
+}
+.frame-layout > .stack {
+  width: 100%;
+}
+.ops-empty {
+  border: 1px solid #2f4045;
+  border-top: 0;
+  padding: 20px;
+  color: #93a09f;
+  font-size: 12px;
 }
 .eyebrow {
   font-size: 9px;

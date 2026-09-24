@@ -4,7 +4,6 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-  BookOpen,
   BrainCircuit,
   Check,
   CheckCircle2,
@@ -17,12 +16,10 @@ import {
   GitCompareArrows,
   History,
   LayoutDashboard,
-  Link2,
   Menu,
   Plus,
   RefreshCw,
   Search,
-  ShieldCheck,
   SlidersHorizontal,
   Trash2,
   Upload,
@@ -54,7 +51,6 @@ import {
   marketStats,
   packageData,
   readiness,
-  workflowPlan,
 } from "./engine";
 import { seedDecisions } from "./seed";
 import AnalysisPage from "./AnalysisPage";
@@ -90,7 +86,7 @@ const nav: { id: Page; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "workspace", label: "Decision workspace", icon: GitCompareArrows },
   { id: "market", label: "Market intelligence", icon: Activity },
   { id: "evidence", label: "Evidence library", icon: Database },
-  { id: "people", label: "People & integrity", icon: Users },
+  { id: "people", label: "Contacts", icon: Users },
   { id: "package", label: "Decision package", icon: FileCheck2 },
 ];
 
@@ -103,7 +99,6 @@ function App() {
   const [showCreate, setShowCreate] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
   const [notice, setNotice] = useState("");
-  const [showGuide, setShowGuide] = useState(true);
   const [scenarioWeight, setScenarioWeight] = useState<Record<string, number>>(
     {},
   );
@@ -128,6 +123,9 @@ function App() {
   } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const decision = decisions.find((d) => d.id === activeId) ?? decisions[0];
+  const matchingDecisions = decisions.filter((d) =>
+    d.title.toLowerCase().includes(query.toLowerCase()),
+  );
   const evaluation = useMemo(
     () => evaluate(decision, scenarioWeight),
     [decision, scenarioWeight],
@@ -139,7 +137,6 @@ function App() {
     () => marketStats(decision.market.filter((record) => record.verified)),
     [decision],
   );
-  const plan = useMemo(() => workflowPlan(decision), [decision]);
   const latestRun = decision.runs[0];
   const stale = !latestRun || latestRun.fingerprint !== fingerprint(decision);
 
@@ -459,10 +456,8 @@ function App() {
             <strong>
               DECISION<span>LEDGER</span>
             </strong>
-            <small>INTELLIGENCE WORKSPACE</small>
           </div>
         </div>
-        <div className="sidebar-section-label">WORKSPACE</div>
         <nav>
           {nav.map((item) => (
             <button
@@ -482,18 +477,6 @@ function App() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="topic-card">
-            <span className="topic-pill">ARMY SBIR / STTR</span>
-            <strong>Decision as a program</strong>
-            <p>Schema driven, auditable studies and acquisition decisions.</p>
-            <a
-              href="https://armysbir.army.mil/topics/agentic-ai-schema-driven-decision-management/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              View topic <ArrowUpRight size={13} />
-            </a>
-          </div>
           <button className="reset-link" onClick={resetDemo}>
             <RefreshCw size={14} /> Clear local data
           </button>
@@ -509,24 +492,18 @@ function App() {
           >
             <Menu size={20} />
           </button>
-          <div className="breadcrumb">
-            Workspace <span>/</span>{" "}
-            <b>
-              {page === "overview"
-                ? "Overview"
-                : nav.find((n) => n.id === page)?.label}
-            </b>
-          </div>
           <div className="top-actions">
-            <div className="search">
-              <Search size={16} />
-              <input
-                aria-label="Search decisions"
-                placeholder="Search decisions..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
+            {page === "overview" && (
+              <div className="search">
+                <Search size={16} />
+                <input
+                  aria-label="Search decisions"
+                  placeholder="Search decisions..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+            )}
             <button className="new-button" onClick={() => setShowCreate(true)}>
               <Plus size={16} /> New decision
             </button>
@@ -535,209 +512,49 @@ function App() {
         <main className="content">
           {page === "overview" && (
             <>
-              <div className="ops-header">
+              <div className="section-head overview-head">
                 <div>
-                  <div className="eyebrow">WORKSPACE / OVERVIEW</div>
-                  <h1>Decision operations</h1>
-                  <p>
-                    Intake, source review, evaluation, and release in one place.
-                  </p>
+                  <h1>Decisions</h1>
                 </div>
-                <div className="ops-header-actions">
-                  <button
-                    className="outline-button"
-                    onClick={() => setPage("evidence")}
-                  >
-                    <Database size={15} /> Sources
-                  </button>
-                  <button
-                    className="dark-button"
-                    onClick={() => setShowCreate(true)}
-                  >
-                    <Plus size={15} /> New decision
-                  </button>
-                </div>
-              </div>
-              <div className="ops-layout">
-                <section className="panel ops-current">
-                  <div className="ops-panel-top">
-                    <span className="eyebrow">ACTIVE DECISION</span>
-                    <span className="status-pill gray">
-                      {decision.runs.length
-                        ? stale
-                          ? "REVIEW CHANGES"
-                          : "EVALUATED"
-                        : "DRAFT"}
-                    </span>
-                  </div>
-                  <h2>{decision.title}</h2>
-                  <p className="ops-question">
-                    {decision.question ||
-                      "No decision question has been entered."}
-                  </p>
-                  <div className="ops-divider" />
-                  <div className="ops-next">
-                    <span>NEXT ACTION</span>
-                    <strong>
-                      {plan.find((step) => !step.done)?.title ??
-                        "Review package"}
-                    </strong>
-                    <p>
-                      {plan.find((step) => !step.done)?.detail ??
-                        "Review the decision record before release."}
-                    </p>
-                  </div>
-                  <div className="ops-buttons">
-                    <button
-                      className="dark-button"
-                      onClick={() => setPage("analysis")}
-                    >
-                      <BrainCircuit size={15} /> Analyze request
-                    </button>
-                    <button
-                      className="outline-button"
-                      onClick={() => {
-                        setPage("workspace");
-                        setTab("frame");
-                      }}
-                    >
-                      Open model <ArrowRight size={15} />
-                    </button>
-                  </div>
-                  <div className="ops-facts">
-                    <div>
-                      <strong>{decision.evidence.length}</strong>
-                      <span>SOURCES</span>
-                    </div>
-                    <div>
-                      <strong>{decision.market.length}</strong>
-                      <span>PRICE RECORDS</span>
-                    </div>
-                    <div>
-                      <strong>{decision.options.length}</strong>
-                      <span>OPTIONS</span>
-                    </div>
-                    <div>
-                      <strong>{decision.runs.length}</strong>
-                      <span>RUNS</span>
-                    </div>
-                  </div>
-                </section>
-                <div className="stack">
-                  <section className="panel ops-process">
-                    <div className="eyebrow">PROCESS</div>
-                    <h2>Decision path</h2>
-                    {plan.map((step, i) => (
-                      <button
-                        className="ops-step"
-                        key={step.title}
-                        onClick={() => {
-                          if (i === 0) {
-                            setPage("workspace");
-                            setTab("frame");
-                          } else if (i === 1) setPage("evidence");
-                          else if (i === 2) {
-                            setPage("workspace");
-                            setTab("compare");
-                          } else if (i === 3) {
-                            setPage("workspace");
-                            setTab("challenge");
-                          } else setPage("package");
-                        }}
-                      >
-                        <span className={step.done ? "done" : ""}>
-                          {step.done ? (
-                            <Check size={13} />
-                          ) : (
-                            String(i + 1).padStart(2, "0")
-                          )}
-                        </span>
-                        <div>
-                          <strong>{step.title}</strong>
-                          <small>{step.detail}</small>
-                        </div>
-                        <ArrowUpRight size={15} />
-                      </button>
-                    ))}
-                  </section>
-                  <section className="panel ops-topic">
-                    <div className="eyebrow">SOURCE / ARMY SBIR-STTR</div>
-                    <strong>
-                      Agentic AI, schema-driven decision management
-                    </strong>
-                    <p>
-                      Phase I asks for formal decision objects, governed AI,
-                      reproducible evaluation, sensitivity, and two
-                      demonstrations.
-                    </p>
-                    <div className="topic-ids">
-                      <span>
-                        SBIR <b>ARM26BX06-NV012</b>
-                      </span>
-                      <span>
-                        STTR <b>ARM26TX06-NV003</b>
-                      </span>
-                    </div>
-                    <a
-                      href="https://armysbir.army.mil/topics/agentic-ai-schema-driven-decision-management/"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Official topic <ArrowUpRight size={14} />
-                    </a>
-                  </section>
-                </div>
-              </div>
-              <div className="section-head">
-                <div>
-                  <div className="eyebrow">ALL DECISIONS</div>
-                  <h2>Workspaces</h2>
-                </div>
-                <span className="muted">
-                  {
-                    decisions.filter((d) =>
-                      d.title.toLowerCase().includes(query.toLowerCase()),
-                    ).length
-                  }{" "}
-                  total
-                </span>
+                <span className="muted">{matchingDecisions.length} total</span>
               </div>
               <div className="ops-table">
                 <div className="ops-table-head">
                   <span>DECISION</span>
                   <span>TYPE</span>
                   <span>STATUS</span>
-                  <span>OPEN ISSUES</span>
+                  <span>READINESS</span>
                   <span></span>
                 </div>
-                {decisions
-                  .filter((d) =>
-                    d.title.toLowerCase().includes(query.toLowerCase()),
-                  )
-                  .map((d) => {
-                    const r = readiness(d);
-                    const current =
-                      d.runs.length && d.runs[0].fingerprint === fingerprint(d);
-                    return (
-                      <button
-                        className="ops-table-row"
-                        key={d.id}
-                        onClick={() => loadDecision(d.id)}
-                      >
-                        <strong>{d.title}</strong>
-                        <span>{d.kind}</span>
-                        <span>
-                          {d.runs.length
-                            ? current
-                              ? "Evaluated"
-                              : "Inputs changed"
-                            : "Draft"}
-                        </span>
-                        <span>{r.total - r.passed} checks</span>
-                        <ArrowRight size={16} />
-                      </button>
-                    );
-                  })}
+                {matchingDecisions.map((d) => {
+                  const r = readiness(d);
+                  const current =
+                    d.runs.length && d.runs[0].fingerprint === fingerprint(d);
+                  return (
+                    <button
+                      className="ops-table-row"
+                      key={d.id}
+                      onClick={() => loadDecision(d.id)}
+                    >
+                      <strong>{d.title}</strong>
+                      <span>{d.kind}</span>
+                      <span>
+                        {d.runs.length
+                          ? current
+                            ? "Evaluated"
+                            : "Inputs changed"
+                          : "Draft"}
+                      </span>
+                      <span>
+                        {r.passed}/{r.total} passed
+                      </span>
+                      <ArrowRight size={16} />
+                    </button>
+                  );
+                })}
+                {matchingDecisions.length === 0 && (
+                  <div className="ops-empty">No matching decisions.</div>
+                )}
               </div>
             </>
           )}
@@ -756,19 +573,6 @@ function App() {
                       ? "Decision workspace"
                       : nav.find((n) => n.id === page)?.label}
                   </h1>
-                  <p>
-                    {page === "workspace"
-                      ? "Define the model before evaluating alternatives."
-                      : page === "analysis"
-                        ? "Reason over the request and the records you have actually added."
-                        : page === "market"
-                          ? "Import comparable records, then inspect price history and scope."
-                          : page === "evidence"
-                            ? "Add source records, verify them, and link them to options."
-                            : page === "people"
-                              ? "Record official roles and complete source-based integrity checks."
-                              : "Review the basis, open issues, and export a decision record."}
-                  </p>
                 </div>
                 <div className="decision-select-wrap">
                   <span>ACTIVE DECISION</span>
@@ -793,13 +597,6 @@ function App() {
                   <ChevronDown size={15} />
                 </div>
               </div>
-              <div className="context-line">
-                <span className="live-indicator" /> Local prototype ·
-                unclassified only <i /> {decision.evidence.length} source
-                records <i /> {decision.market.length} price records <i />{" "}
-                {decision.runs.length} evaluation runs
-              </div>
-
               {page === "workspace" && (
                 <>
                   <div className="tabs">
@@ -821,7 +618,7 @@ function App() {
                     ))}
                   </div>
                   {tab === "frame" && (
-                    <div className="two-col">
+                    <div className="frame-layout">
                       <div className="stack">
                         <section className="panel">
                           <PanelHead
@@ -1040,34 +837,6 @@ function App() {
                               )}
                               %
                             </strong>
-                          </div>
-                        </section>
-                      </div>
-                      <div className="stack">
-                        <Guidance
-                          plan={plan}
-                          open={showGuide}
-                          toggle={() => setShowGuide(!showGuide)}
-                        />
-                        <section className="panel">
-                          <PanelHead
-                            eyebrow="DESIGN PRINCIPLE"
-                            title="Human judgment stays visible"
-                            subtitle="Analysis and model scores remain reviewable. A person verifies evidence, resolves risks, and signs the package."
-                          />
-                          <div className="principle-list">
-                            <div>
-                              <ShieldCheck size={18} />
-                              <span>Explicit constraints and criteria</span>
-                            </div>
-                            <div>
-                              <Link2 size={18} />
-                              <span>Traceable source records</span>
-                            </div>
-                            <div>
-                              <RefreshCw size={18} />
-                              <span>Refreshable evaluation snapshots</span>
-                            </div>
                           </div>
                         </section>
                       </div>
@@ -2229,7 +1998,13 @@ function App() {
               )}
 
               {page === "evidence" && (
-                <div className="two-col evidence-layout">
+                <div
+                  className={
+                    decision.options.length
+                      ? "two-col evidence-layout"
+                      : "evidence-only"
+                  }
+                >
                   <section className="panel">
                     <div className="panel-title-row">
                       <PanelHead
@@ -2296,68 +2071,50 @@ function App() {
                       <Empty text="Add a source record, then link it to an option in Compare." />
                     )}
                   </section>
-                  <div className="stack">
-                    <section className="panel">
-                      <PanelHead
-                        eyebrow="EVIDENCE COVERAGE"
-                        title="Option traceability"
-                        subtitle="Source links make evaluation claims inspectable."
-                      />
-                      <div className="coverage-list">
-                        {decision.options.map((o) => (
-                          <div key={o.id}>
-                            <div>
-                              <strong>{o.name}</strong>
-                              <span>
-                                {o.evidenceIds.length} source
-                                {o.evidenceIds.length === 1 ? "" : "s"}
-                              </span>
+                  {decision.options.length > 0 && (
+                    <div className="stack">
+                      <section className="panel">
+                        <PanelHead
+                          eyebrow="EVIDENCE COVERAGE"
+                          title="Option traceability"
+                          subtitle="Source links make evaluation claims inspectable."
+                        />
+                        <div className="coverage-list">
+                          {decision.options.map((o) => (
+                            <div key={o.id}>
+                              <div>
+                                <strong>{o.name}</strong>
+                                <span>
+                                  {o.evidenceIds.length} source
+                                  {o.evidenceIds.length === 1 ? "" : "s"}
+                                </span>
+                              </div>
                             </div>
-                            <div className="bar">
-                              <div
-                                style={{
-                                  width: `${Math.min(100, o.evidenceIds.length * 40)}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <button
-                        className="outline-button full"
-                        onClick={() => {
-                          setPage("workspace");
-                          setTab("compare");
-                        }}
-                      >
-                        Link evidence to options <ArrowRight size={15} />
-                      </button>
-                    </section>
-                    <section className="panel">
-                      <PanelHead
-                        eyebrow="RULE OF EVIDENCE"
-                        title="A source is not a conclusion"
-                        subtitle="The reviewer should validate its scope, date, and relevance before marking it verified."
-                      />
-                      <p className="body-copy">
-                        In later phases, connectors can ingest digital
-                        engineering artifacts and public acquisition records.
-                        The prototype keeps every imported item in a review
-                        queue.
-                      </p>
-                    </section>
-                  </div>
+                          ))}
+                        </div>
+                        <button
+                          className="outline-button full"
+                          onClick={() => {
+                            setPage("workspace");
+                            setTab("compare");
+                          }}
+                        >
+                          Link evidence to options <ArrowRight size={15} />
+                        </button>
+                      </section>
+                    </div>
+                  )}
                 </div>
               )}
 
               {page === "people" && (
-                <div className="two-col">
+                <div className="people-layout">
                   <section className="panel">
                     <div className="panel-title-row">
                       <PanelHead
                         eyebrow="TEAM MAP"
-                        title="Roles & contacts"
-                        subtitle="Use official sources. Avoid informal personal research in acquisition decisions."
+                        title="Contact records"
+                        subtitle="Role, organization, and official source for each contact."
                       />
                       <button
                         className="small-button"
@@ -2525,87 +2282,10 @@ function App() {
                         </div>
                       ))}
                     </div>
+                    {decision.contacts.length === 0 && (
+                      <Empty text="No contacts recorded." />
+                    )}
                   </section>
-                  <div className="stack">
-                    <section className="panel">
-                      <PanelHead
-                        eyebrow="INTEGRITY WORKFLOW"
-                        title="Responsible due diligence"
-                        subtitle="Track organization and vendor checks through authoritative records."
-                      />
-                      <div className="integrity-list">
-                        <a
-                          href="https://sam.gov/"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <ShieldCheck size={19} />
-                          <div>
-                            <strong>SAM.gov entity & exclusions</strong>
-                            <span>
-                              Verify registration and exclusion status at the
-                              source.
-                            </span>
-                          </div>
-                          <ArrowUpRight size={16} />
-                        </a>
-                        <a
-                          href="https://www.usaspending.gov/"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <BookOpen size={19} />
-                          <div>
-                            <strong>USAspending awards</strong>
-                            <span>
-                              Review federal award history and recipient
-                              context.
-                            </span>
-                          </div>
-                          <ArrowUpRight size={16} />
-                        </a>
-                        <a
-                          href="https://www.fpds.gov/"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <Database size={19} />
-                          <div>
-                            <strong>FPDS contract data</strong>
-                            <span>
-                              Check award records and contract details.
-                            </span>
-                          </div>
-                          <ArrowUpRight size={16} />
-                        </a>
-                      </div>
-                      <div className="market-warning">
-                        <CircleAlert size={17} />
-                        <span>
-                          These links open official systems. The prototype does
-                          not run an automated background check or claim a
-                          person is cleared.
-                        </span>
-                      </div>
-                    </section>
-                    <section className="panel">
-                      <PanelHead
-                        eyebrow="SOLICITATION CHANNEL"
-                        title="Official question path"
-                        subtitle="The Army topic lists the SBIR/STTR Help Desk for program questions."
-                      />
-                      <a
-                        className="official-contact"
-                        href="mailto:usarmy.sbirsttr@army.mil"
-                      >
-                        usarmy.sbirsttr@army.mil <ArrowUpRight size={15} />
-                      </a>
-                      <p className="microcopy">
-                        Use the solicitation and DSIP instructions for
-                        topic-specific communications.
-                      </p>
-                    </section>
-                  </div>
                 </div>
               )}
 
@@ -2669,7 +2349,7 @@ function App() {
                       <PanelHead
                         eyebrow="DECISION BASIS"
                         title="Evidence and context"
-                        subtitle="An export includes the complete schema and reproducible run history."
+                        subtitle="Records included in this decision."
                       />
                       <div className="package-facts">
                         <div>
@@ -2689,24 +2369,6 @@ function App() {
                           <span>Risks</span>
                         </div>
                       </div>
-                      <div className="package-subhead">Open issues</div>
-                      <ul className="issues">
-                        {ready.checks
-                          .filter((c) => !c.pass)
-                          .map((c) => (
-                            <li key={c.label}>
-                              <CircleAlert size={15} />
-                              {c.label}
-                            </li>
-                          ))}
-                        {ready.passed === ready.total && (
-                          <li>
-                            <CheckCircle2 size={15} />
-                            All automated readiness checks passed. Human
-                            sign-off is still required.
-                          </li>
-                        )}
-                      </ul>
                     </section>
                   </div>
                   <div className="stack">
@@ -2757,18 +2419,6 @@ function App() {
                       >
                         <FileText size={16} /> Print summary
                       </button>
-                    </section>
-                    <section className="panel">
-                      <PanelHead
-                        eyebrow="HUMAN CONTROL"
-                        title="Sign-off remains with the team"
-                        subtitle="This model organizes evidence and exposes uncertainty. It does not approve a procurement action."
-                      />
-                      <p className="body-copy">
-                        The signed record should capture a named decision
-                        authority, date, rationale, and any accepted residual
-                        risks in the governing system.
-                      </p>
                     </section>
                   </div>
                 </div>
@@ -2851,44 +2501,6 @@ function Empty({ text }: { text: string }) {
       <CircleAlert size={20} />
       <span>{text}</span>
     </div>
-  );
-}
-function Guidance({
-  plan,
-  open,
-  toggle,
-}: {
-  plan: ReturnType<typeof workflowPlan>;
-  open: boolean;
-  toggle: () => void;
-}) {
-  return (
-    <section className="panel guidance-panel">
-      <button className="guidance-title" onClick={toggle}>
-        <div>
-          <div className="eyebrow">GUIDED WORKFLOW</div>
-          <h2>Next best steps</h2>
-        </div>
-        <ChevronDown size={18} className={open ? "" : "rotate"} />
-      </button>
-      {open && (
-        <div className="guide-steps">
-          {plan.map((step, i) => (
-            <div className="guide-step" key={step.title}>
-              <span
-                className={step.done ? "guide-circle done" : "guide-circle"}
-              >
-                {step.done ? <Check size={13} /> : i + 1}
-              </span>
-              <div>
-                <strong>{step.title}</strong>
-                <p>{step.detail}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
   );
 }
 function EditableList({
