@@ -8,6 +8,10 @@ The product starts with a decision question. Operators add options, criteria, so
 
 Requires Node.js 20.19+ or 22.12+.
 
+**Mac:** Double-click `start.command` in this repo. It installs dependencies if needed, starts the UI and local API, and opens the working address. Keep its Terminal window open while using the app. Opening `index.html` directly with `file://` will show launch instructions because source modules require a local server.
+
+**Terminal:**
+
 ```bash
 npm install
 cp .env.example .env
@@ -28,6 +32,7 @@ npm test
 - **Decision model:** first-class typed objects and a [JSON Schema](schema/decision.schema.json) for a trade study or a decision program.
 - **Comparison:** weighted scoring, hard price and lead-time gates, a nearest single-weight flip, and a saved input snapshot for every evaluation.
 - **Evidence and market context:** source records with reviewer-set verification status, CSV price import, raw price trend, and median of reviewed comparables. Price differences are prompts for review, not normalized estimates.
+- **Structured intake:** a reasoning model drafts a question, objective, stated options and constraints, criteria to consider, and open questions. Extracted options and constraints must carry exact excerpts from the request. An operator reviews the draft and explicitly applies only the question and objective.
 - **Analysis:** server-side OpenAI Responses API with high reasoning effort, streamed output, code interpreter, and opt-in public web search. The model is instructed to distinguish supplied facts from inference and cite source IDs. AI output is advisory and is saved with the input fingerprint.
 - **Package:** readiness checks and JSON export of the complete decision record and evaluation history. Human approval remains outside the prototype.
 

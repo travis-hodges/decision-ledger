@@ -38,7 +38,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { AnalysisRun, Decision, Evidence, MarketRecord } from "./model";
+import type {
+  AnalysisRun,
+  Decision,
+  Evidence,
+  FrameDraft,
+  MarketRecord,
+} from "./model";
 import { dateLabel, money, uid } from "./model";
 import {
   createRun,
@@ -108,6 +114,13 @@ function App() {
   >("idle");
   const [analysisError, setAnalysisError] = useState("");
   const [analysisTools, setAnalysisTools] = useState<string[]>([]);
+  const [frameDraft, setFrameDraft] = useState<
+    (FrameDraft & { decisionId: string; inputFingerprint: string }) | null
+  >(null);
+  const [framePhase, setFramePhase] = useState<
+    "idle" | "working" | "done" | "error"
+  >("idle");
+  const [frameError, setFrameError] = useState("");
   const [allowPublicWeb, setAllowPublicWeb] = useState(false);
   const [apiHealth, setApiHealth] = useState<{
     configured: boolean;
@@ -368,7 +381,71 @@ function App() {
         error instanceof Error ? error.message : "Analysis failed.",
       );
       setAnalysisPhase("error");
+    } finally {
+      setAllowPublicWeb(false);
     }
+  }
+
+  async function structureRequest() {
+    const prompt = analysisPrompt.trim() || decision.question.trim();
+    if (!prompt) {
+      toast("Enter a decision request first.");
+      return;
+    }
+    if (!apiHealth?.configured) {
+      toast("Configure OPENAI_API_KEY on the local API server.");
+      return;
+    }
+    const decisionId = decision.id;
+    const inputFingerprint = fingerprint(decision);
+    setFrameDraft(null);
+    setFrameError("");
+    setFramePhase("working");
+    try {
+      const response = await fetch("/api/frame", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const body = await response.json();
+      if (!response.ok)
+        throw new Error(
+          body.error || `Could not structure request (${response.status}).`,
+        );
+      setFrameDraft({
+        ...(body.draft as FrameDraft),
+        decisionId,
+        inputFingerprint,
+      });
+      setFramePhase("done");
+    } catch (error) {
+      setFrameError(
+        error instanceof Error ? error.message : "Could not structure request.",
+      );
+      setFramePhase("error");
+    }
+  }
+
+  function applyFrame() {
+    if (
+      !frameDraft ||
+      frameDraft.decisionId !== decision.id ||
+      frameDraft.inputFingerprint !== fingerprint(decision)
+    ) {
+      toast(
+        "Decision inputs changed. Structure the request again before applying it.",
+      );
+      return;
+    }
+    update((d) => ({
+      ...d,
+      question: frameDraft.question,
+      objective: frameDraft.objective,
+    }));
+    setFrameDraft(null);
+    setPage("workspace");
+    setTab("frame");
+    toast("Draft question and objective added. Review and complete the model.");
   }
 
   return (
@@ -1755,6 +1832,16 @@ function App() {
                   setPublicWeb={setAllowPublicWeb}
                   health={apiHealth}
                   run={runAnalysis}
+                  structure={structureRequest}
+                  frameDraft={frameDraft}
+                  framePhase={framePhase}
+                  frameError={frameError}
+                  frameCurrent={Boolean(
+                    frameDraft &&
+                    frameDraft.decisionId === decision.id &&
+                    frameDraft.inputFingerprint === fingerprint(decision),
+                  )}
+                  applyFrame={applyFrame}
                   openEvidence={() => setPage("evidence")}
                 />
               )}

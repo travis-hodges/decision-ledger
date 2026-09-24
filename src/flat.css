@@ -792,6 +792,132 @@ body,
 .analysis-output {
   min-height: 340px;
 }
+.frame-entry {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #344044;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.frame-entry > div {
+  display: grid;
+  gap: 3px;
+}
+.frame-entry strong {
+  font-size: 12px;
+  color: #e2e6e4;
+}
+.frame-entry span,
+.frame-muted {
+  font-size: 11px;
+  color: #93a09f;
+  line-height: 1.5;
+}
+.frame-entry button:disabled,
+.frame-apply button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+.frame-review {
+  display: grid;
+  gap: 16px;
+}
+.frame-review .frame-muted {
+  margin: 0;
+}
+.frame-fields,
+.frame-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.frame-fields > div,
+.frame-columns > div {
+  border: 1px solid #354145;
+  background: #171d1f;
+  padding: 14px;
+}
+.frame-fields > div {
+  display: grid;
+  gap: 8px;
+}
+.frame-fields span {
+  color: #ab876f;
+  font:
+    500 10px "IBM Plex Mono",
+    monospace;
+  letter-spacing: 0.08em;
+}
+.frame-fields strong {
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+.frame-columns > div > p {
+  color: #8e9a99;
+  font-size: 11px;
+  margin-bottom: 0;
+}
+.frame-item {
+  display: grid;
+  gap: 4px;
+  border-top: 1px solid #303b3d;
+  padding-top: 11px;
+  margin-top: 11px;
+}
+.frame-item strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.frame-item small {
+  color: #92a09e;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.frame-list {
+  border-top: 1px solid #354145;
+  padding-top: 12px;
+}
+.frame-list p,
+.frame-list li {
+  color: #c5cfcc;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.frame-list p {
+  margin: 8px 0 0;
+}
+.frame-list ul {
+  margin: 9px 0 0;
+  padding-left: 18px;
+}
+.frame-apply {
+  border-top: 1px solid #354145;
+  padding-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+.frame-apply span {
+  color: #93a09f;
+  font-size: 11px;
+  line-height: 1.5;
+  max-width: 340px;
+}
+@media (max-width: 780px) {
+  .frame-entry,
+  .frame-apply {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .frame-fields,
+  .frame-columns {
+    grid-template-columns: 1fr;
+  }
+}
 .analysis-render {
   margin-top: 18px;
   color: #d6e5e3;

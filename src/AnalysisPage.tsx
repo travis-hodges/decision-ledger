@@ -6,11 +6,12 @@ import {
   Code2,
   Database,
   Globe2,
+  ListChecks,
   Radio,
   ShieldCheck,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import type { Decision } from "./model";
+import type { Decision, FrameDraft } from "./model";
 import { dateLabel } from "./model";
 import { fingerprint } from "./engine";
 
@@ -27,6 +28,13 @@ type Props = {
   setPublicWeb: (value: boolean) => void;
   health: { configured: boolean; model: string } | null;
   run: () => void;
+  structure: () => void;
+  frameDraft:
+    (FrameDraft & { decisionId: string; inputFingerprint: string }) | null;
+  framePhase: "idle" | "working" | "done" | "error";
+  frameError: string;
+  frameCurrent: boolean;
+  applyFrame: () => void;
   openEvidence: () => void;
 };
 
@@ -43,10 +51,16 @@ export default function AnalysisPage({
   setPublicWeb,
   health,
   run,
+  structure,
+  frameDraft,
+  framePhase,
+  frameError,
+  frameCurrent,
+  applyFrame,
   openEvidence,
 }: Props) {
   const latest = decision.analyses?.[0];
-  const shown = output || latest?.output || "";
+  const shown = phase === "streaming" ? output : output || latest?.output || "";
   const current = latest && latest.inputFingerprint === fingerprint(decision);
   return (
     <div className="analysis-layout">
@@ -99,6 +113,22 @@ export default function AnalysisPage({
               <ArrowRight size={15} />
             </button>
           </div>
+          <div className="frame-entry">
+            <div>
+              <strong>Need a starting frame?</strong>
+              <span>
+                Extract the question and stated constraints for review.
+              </span>
+            </div>
+            <button
+              className="outline-button"
+              disabled={framePhase === "working" || !health?.configured}
+              onClick={structure}
+            >
+              <ListChecks size={15} />{" "}
+              {framePhase === "working" ? "Structuring…" : "Structure request"}
+            </button>
+          </div>
           {!health?.configured && (
             <div className="config-note">
               <CircleAlert size={15} /> Set <code>OPENAI_API_KEY</code> in the
@@ -112,9 +142,117 @@ export default function AnalysisPage({
             that service.
           </p>
         </section>
+        {(frameDraft || framePhase === "error" || framePhase === "working") && (
+          <section className="panel frame-review">
+            <div className="analysis-topline">
+              <div className="eyebrow">02 / FRAME DRAFT</div>
+              <span className="model-state">
+                <span />
+                {framePhase === "working"
+                  ? "Structuring"
+                  : frameCurrent
+                    ? "Review required"
+                    : "Inputs changed"}
+              </span>
+            </div>
+            {framePhase === "error" && (
+              <div className="analysis-error">
+                <CircleAlert size={17} />
+                {frameError}
+              </div>
+            )}
+            {framePhase === "working" && (
+              <p className="frame-muted">
+                Extracting stated facts and open questions from the request.
+              </p>
+            )}
+            {frameDraft && (
+              <>
+                <p className="frame-muted">
+                  Proposed wording. Nothing is added to the decision until you
+                  apply it.
+                </p>
+                <div className="frame-fields">
+                  <div>
+                    <span>DECISION QUESTION</span>
+                    <strong>{frameDraft.question || "Not identified"}</strong>
+                  </div>
+                  <div>
+                    <span>OBJECTIVE</span>
+                    <strong>{frameDraft.objective || "Not identified"}</strong>
+                  </div>
+                </div>
+                <div className="frame-columns">
+                  <div>
+                    <span className="eyebrow">STATED OPTIONS</span>
+                    {frameDraft.options.length ? (
+                      frameDraft.options.map((item, i) => (
+                        <div className="frame-item" key={`${item.name}-${i}`}>
+                          <strong>{item.name}</strong>
+                          <small>“{item.excerpt}”</small>
+                        </div>
+                      ))
+                    ) : (
+                      <p>None stated.</p>
+                    )}
+                  </div>
+                  <div>
+                    <span className="eyebrow">STATED CONSTRAINTS</span>
+                    {frameDraft.constraints.length ? (
+                      frameDraft.constraints.map((item, i) => (
+                        <div
+                          className="frame-item"
+                          key={`${item.statement}-${i}`}
+                        >
+                          <strong>{item.statement}</strong>
+                          <small>“{item.excerpt}”</small>
+                        </div>
+                      ))
+                    ) : (
+                      <p>None stated.</p>
+                    )}
+                  </div>
+                </div>
+                {frameDraft.suggestedCriteria.length > 0 && (
+                  <div className="frame-list">
+                    <span className="eyebrow">CRITERIA TO CONSIDER</span>
+                    <p>
+                      {frameDraft.suggestedCriteria
+                        .map((c) => c.name)
+                        .join(" · ")}
+                    </p>
+                  </div>
+                )}
+                {frameDraft.openQuestions.length > 0 && (
+                  <div className="frame-list">
+                    <span className="eyebrow">OPEN QUESTIONS</span>
+                    <ul>
+                      {frameDraft.openQuestions.map((q, i) => (
+                        <li key={i}>{q}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="frame-apply">
+                  <span>
+                    Only the question and objective will be copied. Add options,
+                    criteria, and source records in the workspace.
+                  </span>
+                  <button
+                    className="dark-button"
+                    disabled={!frameCurrent}
+                    onClick={applyFrame}
+                  >
+                    Apply question & objective <ArrowRight size={15} />
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+        )}
         <section className="panel analysis-output">
           <div className="analysis-topline">
-            <div className="eyebrow">02 / ANALYSIS</div>
+            <div className="eyebrow">03 / ANALYSIS</div>
             <span
               className={`model-state ${phase === "streaming" ? "online" : ""}`}
             >
@@ -221,7 +359,7 @@ export default function AnalysisPage({
           <div className="control-list">
             <div>
               <ShieldCheck size={17} />
-              <span>Analysis never edits the model.</span>
+              <span>Draft changes require your review.</span>
             </div>
             <div>
               <ShieldCheck size={17} />

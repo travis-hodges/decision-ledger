@@ -13,6 +13,12 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if (location.protocol === "file:") {
+        document.getElementById("root").innerHTML =
+          '<main style="min-height:100vh;box-sizing:border-box;display:grid;place-content:center;gap:16px;padding:32px;background:#101416;color:#e9eceb;font:16px system-ui,sans-serif"><div style="color:#d5a37c;letter-spacing:.15em;font-size:12px">DECISION LEDGER</div><h1 style="margin:0;font-size:32px">Launch the local app</h1><p style="max-width:560px;margin:0;line-height:1.6;color:#aeb8b8">This source file cannot run through file://. On a Mac, double-click <strong>start.command</strong> in this folder. Or run <code>npm install && npm run dev</code> here, then open <strong>http://127.0.0.1:5173/</strong>.</p></main>';
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

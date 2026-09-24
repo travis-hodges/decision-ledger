@@ -2,15 +2,15 @@
 
 The [Army topic](https://armysbir.army.mil/topics/agentic-ai-schema-driven-decision-management/) calls for schema-driven decisions, governed agentic assistance, reproducible evaluation and sensitivity, and two demonstrations: a point trade and a longer-running decision program. This plan distinguishes working prototype features from work required for a defensible Phase I submission.
 
-| Topic outcome                             | Current implementation                                            | Phase I work                                                                                     |
-| ----------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| First-class decision objects              | Typed model and published JSON Schema                             | Add versioned requirements, stakeholders, metrics, provenance edges, and schema migration        |
-| Structured elicitation and workflow plans | Human entry path and generated workflow checklist                 | Model-assisted elicitation into schema-validated draft objects; reviewer acceptance before write |
-| Reproducible evaluation                   | Deterministic weighted score, gates, input snapshot               | Independent reference cases, unit/normalization policy, traceable criterion rationale            |
-| Sensitivity and what-flips                | Nearest single-weight flip                                        | Multi-factor ranges, price/lead sensitivity, visual scenario comparison                          |
-| Risks, assumptions, bias                  | Explicit records and readiness checks                             | Owner, evidence, resolution status, and longitudinal change tracking                             |
-| Agentic analysis                          | Streaming reasoning model, calculation tool, opt-in public search | Tool permission policy, citation verification, evaluation set, cost/latency logs                 |
-| Two demonstrations                        | Product supports both study types                                 | Run two authorized, source-backed cases with named reviewers and measured outcomes               |
+| Topic outcome                             | Current implementation                                                                                        | Phase I work                                                                                        |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| First-class decision objects              | Typed model and published JSON Schema                                                                         | Add versioned requirements, stakeholders, metrics, provenance edges, and schema migration           |
+| Structured elicitation and workflow plans | Schema-validated draft frame with exact quoted excerpts, human apply action, and generated workflow checklist | Add multi-turn elicitation, acceptance of individual model objects, and traceable requirement links |
+| Reproducible evaluation                   | Deterministic weighted score, gates, input snapshot                                                           | Independent reference cases, unit/normalization policy, traceable criterion rationale               |
+| Sensitivity and what-flips                | Nearest single-weight flip                                                                                    | Multi-factor ranges, price/lead sensitivity, visual scenario comparison                             |
+| Risks, assumptions, bias                  | Explicit records and readiness checks                                                                         | Owner, evidence, resolution status, and longitudinal change tracking                                |
+| Agentic analysis                          | Streaming reasoning model, calculation tool, opt-in public search                                             | Tool permission policy, citation verification, evaluation set, cost/latency logs                    |
+| Two demonstrations                        | Product supports both study types                                                                             | Run two authorized, source-backed cases with named reviewers and measured outcomes                  |
 
 ## Demonstration design
 

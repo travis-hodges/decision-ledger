@@ -3,6 +3,7 @@ import express from "express";
 import OpenAI from "openai";
 import Ajv2020 from "ajv/dist/2020.js";
 import { readFileSync } from "node:fs";
+import { frameSchema, validateGroundedFrame } from "./frame.mjs";
 
 const app = express();
 app.disable("x-powered-by");
@@ -24,6 +25,61 @@ app.get("/api/health", (_req, res) =>
     tools: ["calculation", "public web search"],
   }),
 );
+
+app.post("/api/frame", async (req, res) => {
+  if (!process.env.OPENAI_API_KEY)
+    return res
+      .status(503)
+      .json({ error: "OPENAI_API_KEY is not configured on the server." });
+  const { prompt } = req.body || {};
+  if (typeof prompt !== "string" || !prompt.trim() || prompt.length > 16000)
+    return res
+      .status(400)
+      .json({ error: "Provide a decision request under 16,000 characters." });
+
+  try {
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const response = await client.responses.create({
+      model,
+      reasoning: { effort: "high" },
+      instructions:
+        "Structure only the user's request into a draft decision frame. Do not invent options, constraints, prices, requirements, or facts. For each extracted option or constraint, copy an exact excerpt from the request. If none are stated, return an empty array. Question and objective may be concise draft phrasing; suggested criteria are proposals, never facts. Put ambiguity and missing information in openQuestions. Do not use outside knowledge.",
+      input: prompt,
+      text: {
+        format: {
+          type: "json_schema",
+          name: "decision_frame",
+          schema: Object.fromEntries(
+            Object.entries(frameSchema).filter(
+              ([key]) => key !== "$schema" && key !== "title",
+            ),
+          ),
+          strict: true,
+        },
+      },
+      store: false,
+      max_output_tokens: 5000,
+    });
+    if (response.status !== "completed" || !response.output_text)
+      return res
+        .status(502)
+        .json({ error: "The model did not complete a decision frame." });
+    const draft = JSON.parse(response.output_text);
+    if (!validateGroundedFrame(draft, prompt))
+      return res.status(502).json({
+        error:
+          "The draft did not pass source grounding checks. Try a more explicit request.",
+      });
+    res.json({ draft, model, responseId: response.id });
+  } catch (error) {
+    res.status(502).json({
+      error:
+        error instanceof Error
+          ? error.message
+          : "Could not structure the request.",
+    });
+  }
+});
 
 app.post("/api/analyze", async (req, res) => {
   if (!process.env.OPENAI_API_KEY)

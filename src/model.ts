@@ -81,6 +81,14 @@ export type AnalysisRun = {
   publicWeb: boolean;
   tools: string[];
 };
+export type FrameDraft = {
+  question: string;
+  objective: string;
+  options: { name: string; excerpt: string }[];
+  constraints: { statement: string; excerpt: string }[];
+  suggestedCriteria: { name: string; why: string }[];
+  openQuestions: string[];
+};
 export type Decision = {
   id: string;
   title: string;
